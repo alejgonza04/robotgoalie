@@ -1,21 +1,42 @@
 import cv2 as cv
 img = cv.imread("InClass.png")
-# convert image to grayscale
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+cam = cv.VideoCapture(0)
 
-#blur the image to reduce the noise while thresholding
-blur = cv.blur(gray, (10, 10))
+# get frame width and height
+frame_width = int(cam.get(cv.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cam.get(cv.CAP_PROP_FRAME_HEIGHT))
 
-#app;u  thresholding to image
-ret, thresh = cv.threshold(blur, 1, 255, cv.THRESH_OTSU)
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
 
-#find the contours in the image
-contours, heirarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+while True:
+    ret, frame = cam.read()
+    # convert image to grayscale
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
-#draw the obtained contour lines 
-cv.drawContours(img, contours, -1, (0, 244, 0), 20)
-cv.namedWindow('Contours', cv.WINDOW_NORMAL)
-cv.namedWindow('Thresh', cv.WINDOW_NORMAL)
-cv.imshow('Contours', img)
-cv.imshow('Thresh', thresh)
-k = cv.waitKey(0) # Wait for a keystroke in the window
+    # Blur the image to reduce noise (Gaussian Blur works better for circles)
+    blur = cv.GaussianBlur(gray, (9, 9), 2)
+
+
+    #app thresholding to image
+    ret, thresh = cv.threshold(blur, 1, 255, cv.THRESH_OTSU)
+
+    #find the contours in the image
+    contours, heirarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+    for contour in contours:
+        if cv.contourArea(contour) > 500:
+            cv.drawContours(frame, [contour], -1, (0, 255, 0), 2)
+    
+    # show frames
+    cv.imshow("live feed", frame)
+
+    # write the frame to the output
+    out.write(frame)
+
+    if cv.waitKey(1) == ord('q'):
+        break
+
+cam.release()
+out.release()
+cv.destroyAllWindows()
