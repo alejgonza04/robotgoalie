@@ -1,27 +1,42 @@
-#include <Servo.h>
+  import cv2
+import serial
 
-Servo servo;  // Initialize a Servo object to manage a servo
+# Set up serial communication with Arduino
+arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Update with the correct port
 
-void setup() {
-  Serial.begin(9600);  // Start serial communication
-  servo.attach(5);  // Attach servo to pin 5
-  servo.write(90);  // Start at center position
-}
+# Start video capture
+cap = cv2.VideoCapture(0)
 
-void loop() {
-  if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');  // Read the incoming command
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        continue
     
-    if (command == "LEFT") {
-      servo.write(0);  // Move servo to -90° (left)
-    } 
-    else if (command == "CENTER") {
-      servo.write(90);  // Move servo to 0° (center)
-    } 
-    else if (command == "RIGHT") {
-      servo.write(180);  // Move servo to 90° (right)
-    }
+    # Convert frame to grayscale (or use color filtering to detect ball)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (15, 15), 0)
     
-    Serial.println("Servo moved to: " + command);
-  }
-}
+    # Detect ball using HoughCircles (modify parameters as needed)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1.2, 30,
+                               param1=50, param2=30, minRadius=10, maxRadius=50)
+    
+    if circles is not None:
+        circles = sorted(circles[0], key=lambda x: x[0])  # Sort by x-coordinate
+        ball_x = circles[0][0]  # Get ball's X position
+        frame_width = frame.shape[1]
+
+        # Determine movement command
+        if ball_x < frame_width * 0.33:
+            arduino.write(b"LEFT\n")
+        elif ball_x > frame_width * 0.66:
+            arduino.write(b"RIGHT\n")
+        else:
+            arduino.write(b"CENTER\n")
+
+    # Show frame (for debugging)
+    cv2.imshow('Frame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
