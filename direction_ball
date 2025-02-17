@@ -1,42 +1,72 @@
-  import cv2
+import cv2
+import numpy as np
+from picamera2 import Picamera2
 import serial
+import time
 
-# Set up serial communication with Arduino
-arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Update with the correct port
+# Initialize serial communication with Arduino (update port accordingly)
+arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Change port to match Arduino
+time.sleep(2)  # Give Arduino time to initialize
 
-# Start video capture
-cap = cv2.VideoCapture(0)
+# Initialize the PiCamera2
+picam2 = Picamera2()
+
+# Start the camera
+picam2.start()
+
+# Get the camera resolution (use the default resolution or set one)
+frame_width = 640
+frame_height = 480
+
+# Video writer setup
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
+
+lower_orange_value = np.array([5, 150, 180])  # Darker neon orange (loosened S & V)
+upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased S & V)
 
 while True:
-    ret, frame = cap.read()
-    if not ret:
-        continue
-    
-    # Convert frame to grayscale (or use color filtering to detect ball)
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (15, 15), 0)
-    
-    # Detect ball using HoughCircles (modify parameters as needed)
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1.2, 30,
-                               param1=50, param2=30, minRadius=10, maxRadius=50)
-    
-    if circles is not None:
-        circles = sorted(circles[0], key=lambda x: x[0])  # Sort by x-coordinate
-        ball_x = circles[0][0]  # Get ball's X position
-        frame_width = frame.shape[1]
+    frame = picam2.capture_array("main")
 
-        # Determine movement command
-        if ball_x < frame_width * 0.33:
-            arduino.write(b"LEFT\n")
-        elif ball_x > frame_width * 0.66:
-            arduino.write(b"RIGHT\n")
-        else:
-            arduino.write(b"CENTER\n")
+    # Resize and convert to HSV
+    frame = cv.resize(frame, (frame_width, frame_height))
+    frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-    # Show frame (for debugging)
-    cv2.imshow('Frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # Create mask for orange color
+    mask = cv.inRange(hsv, lower_orange_value, upper_orange_value)
+
+    # Apply morphological transformations to reduce noise
+    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+
+    # count orange pixels in left and right halves of screen
+    left_half = mask[:, :frame_width // 2]
+    right_half = mask[:, frame_width // 2:]
+
+    left_pixels = np.sum(left_half > 0)
+    right_pixels = np.sum(right_half > 0)
+
+    # determine movement command
+    if left_pixels > right_pixels:
+        command = "LEFT\n"
+    elif right_pixels > left_pixels:
+        command = "RIGHT\n"
+    else:
+        command = "CENTER\n"
+
+    # send command to arduino
+    arduino.write(command.encode())
+    print(f"sent to arduino: {command.strip()}")
+
+    # Show the live feed with mask for debugging
+    cv.imshow("Live Feed", frame)
+    cv.imshow("Mask", mask)
+
+    # Break loop if 'q' is pressed
+    if cv.waitKey(1) == ord('q'):
         break
 
-cap.release()
-cv2.destroyAllWindows()
+picam2.stop()
+arduino.close()
+cv.destroyAllWindows()
