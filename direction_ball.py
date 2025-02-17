@@ -1,0 +1,72 @@
+import cv2
+import numpy as np
+from picamera2 import Picamera2
+import serial
+import time
+
+# Initialize serial communication with Arduino (update port accordingly)
+arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Change port to match Arduino
+time.sleep(2)  # Give Arduino time to initialize
+
+# Initialize the PiCamera2
+picam2 = Picamera2()
+
+# Start the camera
+picam2.start()
+
+# Get the camera resolution (use the default resolution or set one)
+frame_width = 640
+frame_height = 480
+
+# Video writer setup
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
+
+lower_orange_value = np.array([5, 150, 180])  # Darker neon orange (loosened S & V)
+upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased S & V)
+
+while True:
+    frame = picam2.capture_array("main")
+
+    # Resize and convert to HSV
+    frame = cv.resize(frame, (frame_width, frame_height))
+    frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+
+    # Create mask for orange color
+    mask = cv.inRange(hsv, lower_orange_value, upper_orange_value)
+
+    # Apply morphological transformations to reduce noise
+    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+
+    # count orange pixels in left and right halves of screen
+    left_half = mask[:, :frame_width // 2]
+    right_half = mask[:, frame_width // 2:]
+
+    left_pixels = np.sum(left_half > 0)
+    right_pixels = np.sum(right_half > 0)
+
+    # determine movement command
+    if left_pixels > right_pixels:
+        command = "LEFT\n"
+    elif right_pixels > left_pixels:
+        command = "RIGHT\n"
+    else:
+        command = "CENTER\n"
+
+    # send command to arduino
+    arduino.write(command.encode())
+    print(f"sent to arduino: {command.strip()}")
+
+    # Show the live feed with mask for debugging
+    cv.imshow("Live Feed", frame)
+    cv.imshow("Mask", mask)
+
+    # Break loop if 'q' is pressed
+    if cv.waitKey(1) == ord('q'):
+        break
+
+picam2.stop()
+arduino.close()
+cv.destroyAllWindows()
