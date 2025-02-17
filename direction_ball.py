@@ -1,4 +1,4 @@
-import cv2
+import cv2 as cv
 import numpy as np
 from picamera2 import Picamera2
 import serial
@@ -17,6 +17,10 @@ picam2.start()
 # Get the camera resolution (use the default resolution or set one)
 frame_width = 640
 frame_height = 480
+
+# Video writer setup
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
 
 # Video writer setup
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
