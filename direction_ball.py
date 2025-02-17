@@ -5,7 +5,7 @@ import serial
 import time
 
 # Initialize serial communication with Arduino (update port accordingly)
-arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Change port to match Arduino
+arduino = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # Change port to match Arduino
 time.sleep(2)  # Give Arduino time to initialize
 
 # Initialize the PiCamera2
