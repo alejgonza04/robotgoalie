@@ -64,6 +64,7 @@ while True:
     arduino.flush()  # ✅ Clear buffer
     time.sleep(0.1)  # ✅ Give time for Arduino to process
 
+    print(f"✅ Sent to Arduino: {command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
     cv.imshow("Mask", mask)
