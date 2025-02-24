@@ -67,7 +67,7 @@ while True:
     print(f"✅ Sent to Arduino: {command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
-    cv.imshow("Mask", mask)
+    #cv.imshow("Mask", mask)
 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
