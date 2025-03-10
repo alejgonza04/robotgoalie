@@ -30,7 +30,7 @@ out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))'''
 lower_orange_value = np.array([5, 150, 180])  # Darker neon orange (loosened S & V)
 upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased S & V)
 
-AREA_THRESHOLD = 1000
+AREA_THRESHOLD = 500
 
 while True:
     frame = picam2.capture_array("main")
