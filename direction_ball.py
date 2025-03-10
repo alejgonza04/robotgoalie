@@ -15,8 +15,8 @@ picam2 = Picamera2()
 picam2.start()
 
 # Get the camera resolution (use the default resolution or set one)
-frame_width = 640
-frame_height = 480
+frame_width = 320
+frame_height = 240
 
 # Video writer setup
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
