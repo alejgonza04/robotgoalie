@@ -15,8 +15,8 @@ picam2 = Picamera2()
 picam2.start()
 
 # Get the camera resolution (use the default resolution or set one)
-frame_width = 160
-frame_height = 120
+frame_width = 640
+frame_height = 480
 
 # Video writer setup
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
@@ -64,12 +64,12 @@ while True:
     arduino.flush()  # Clear buffer
     time.sleep(0.1)  # Give time for Arduino to process
 
-    print(f"{command}")
+    print(f" Sent to Arduino: {command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
 
-    time.sleep(0.5) 
+    time.sleep(0.1) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
