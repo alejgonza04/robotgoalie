@@ -32,8 +32,6 @@ upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased
 
 AREA_THRESHOLD = 1000
 
-last_command = ""  
-
 while True:
     frame = picam2.capture_array("main")
 
@@ -58,6 +56,7 @@ while True:
     left_pixels = np.sum(left_half > 0)
     right_pixels = np.sum(right_half > 0)'''
 
+    command = None
     if contours:
         largest_contour = max(contours, key=cv.contourArea)
         area = cv.contourArea(largest_contour)
@@ -73,11 +72,10 @@ while True:
             else:
                 command = "CENTER\n"
         
-        if command != last_command:
+        if command:
             arduino.write(command.encode())
             arduino.flush()
-            print(f"Sent to Arduino: {command.strip()}")
-            last_command = command  # Update last sent command
+            print(f"{command}")
     '''# determine movement command
     if left_pixels > right_pixels:
         command = "LEFT\n"
