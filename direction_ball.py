@@ -22,6 +22,10 @@ frame_height = 120
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
 out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
 
+# Video writer setup
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
+
 lower_orange_value = np.array([5, 150, 180])  # Darker neon orange (loosened S & V)
 upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased S & V)
 
@@ -60,14 +64,12 @@ while True:
     arduino.flush()  # Clear buffer
     time.sleep(0.1)  # Give time for Arduino to process
 
-    #print(f"{command}")
+    print(f"{command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
 
     time.sleep(0.5) 
-    out.write(frame)  # Writes each processed frame to the output video file
-
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
