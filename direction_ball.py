@@ -51,8 +51,6 @@ while True:
 
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-    command = "NO BALL\n"
-
     '''# count orange pixels in left and right halves of screen
     left_half = mask[:, :frame_width // 2]
     right_half = mask[:, frame_width // 2:]
