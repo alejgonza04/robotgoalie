@@ -58,8 +58,6 @@ while True:
     left_pixels = np.sum(left_half > 0)
     right_pixels = np.sum(right_half > 0)'''
 
-    command = ""
-
     if contours:
         largest_contour = max(contours, key=cv.contourArea)
         area = cv.contourArea(largest_contour)
@@ -74,11 +72,12 @@ while True:
                 command = "RIGHT\n"
             else:
                 command = "CENTER\n"
-    if command != last_command:
-        arduino.write(command.encode())
-        arduino.flush()
-        print(f"Sent to Arduino: {command.strip()}")
-        last_command = command  # Update last sent command
+        
+        if command != last_command:
+            arduino.write(command.encode())
+            arduino.flush()
+            print(f"Sent to Arduino: {command.strip()}")
+            last_command = command  # Update last sent command
     '''# determine movement command
     if left_pixels > right_pixels:
         command = "LEFT\n"
