@@ -58,6 +58,8 @@ while True:
     left_pixels = np.sum(left_half > 0)
     right_pixels = np.sum(right_half > 0)'''
 
+    command = ""
+
     if contours:
         largest_contour = max(contours, key=cv.contourArea)
         area = cv.contourArea(largest_contour)
