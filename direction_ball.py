@@ -69,7 +69,7 @@ while True:
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
 
-    time.sleep(0.1) 
+    time.sleep(0.5) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
