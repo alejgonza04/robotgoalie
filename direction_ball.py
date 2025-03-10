@@ -6,7 +6,6 @@ import time
 
 # Initialize serial communication with Arduino (update port accordingly)
 arduino = serial.Serial('/dev/ttyACM0', 115200, timeout=1)  # Change port to match Arduino
-time.sleep(2)  # Give Arduino time to initialize
 
 # Initialize the PiCamera2
 picam2 = Picamera2()
@@ -62,8 +61,6 @@ while True:
     # send command to arduino
     arduino.write((command + "\n").encode())  # Ensure newline termination
     arduino.flush()  # Clear buffer
-    time.sleep(0.1)  # Give time for Arduino to process
-
     print(f"Sent to Arduino: {command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
