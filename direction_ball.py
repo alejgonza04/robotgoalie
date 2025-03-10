@@ -5,8 +5,8 @@ import serial
 import time
 
 # Initialize serial communication with Arduino (update port accordingly)
-arduino = serial.Serial('/dev/ttyACM0', 115200, timeout=1)  # Change port to match Arduino
-#time.sleep(2)  # Give Arduino time to initialize
+arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Change port to match Arduino
+time.sleep(2)  # Give Arduino time to initialize
 
 # Initialize the PiCamera2
 picam2 = Picamera2()
@@ -22,15 +22,8 @@ frame_height = 240
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
 out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
 
-'''
-# Video writer setup
-fourcc = cv.VideoWriter_fourcc(*'mp4v')
-out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))'''
-
 lower_orange_value = np.array([5, 150, 180])  # Darker neon orange (loosened S & V)
 upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased S & V)
-
-AREA_THRESHOLD = 500
 
 while True:
     frame = picam2.capture_array("main")
@@ -47,36 +40,14 @@ while True:
     mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
     mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, np.ones((5, 5), np.uint8))
 
-    contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-    '''# count orange pixels in left and right halves of screen
+    # count orange pixels in left and right halves of screen
     left_half = mask[:, :frame_width // 2]
     right_half = mask[:, frame_width // 2:]
 
     left_pixels = np.sum(left_half > 0)
-    right_pixels = np.sum(right_half > 0)'''
+    right_pixels = np.sum(right_half > 0)
 
-    command = None
-    if contours:
-        largest_contour = max(contours, key=cv.contourArea)
-        area = cv.contourArea(largest_contour)
-
-        if area > AREA_THRESHOLD:
-            x, y, w, h = cv.boundingRect(largest_contour)
-            ball_center = x + w // 2
-
-            if ball_center < frame_width // 3:
-                command = "LEFT\n"
-            elif ball_center > frame_width * 2 // 3:
-                command = "RIGHT\n"
-            else:
-                command = "CENTER\n"
-        
-        if command:
-            arduino.write(command.encode())
-            arduino.flush()
-            print(f"{command}")
-    '''# determine movement command
+    # determine movement command
     if left_pixels > right_pixels:
         command = "LEFT\n"
     elif right_pixels > left_pixels:
@@ -85,16 +56,15 @@ while True:
         command = "CENTER\n"
 
     # send command to arduino
-    arduino.write((command + "\n").encode())  
-    arduino.flush()  
-    #time.sleep(0.1)  
+    arduino.write(command.encode())
+    print(f"sent to arduino: {command.strip()}")
 
-    print(f" Sent to Arduino: {command}")
-    # Show the live feed with mask for debugging'''
+    time.sleep(0.1)
+
+    # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
-    #cv.imshow("Mask", mask)
+    cv.imshow("Mask", mask)
 
-   #time.sleep(0.1) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
