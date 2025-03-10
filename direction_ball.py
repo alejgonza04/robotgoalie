@@ -60,16 +60,15 @@ while True:
         command = "CENTER\n"
 
     # send command to arduino
-    arduino.write((command + "\n").encode())  # ✅ Ensure newline termination
-    arduino.flush()  # ✅ Clear buffer
-    time.sleep(0.1)  # ✅ Give time for Arduino to process
+    arduino.write((command + "\n").encode())  # Ensure newline termination
+    arduino.flush()  # Clear buffer
+    time.sleep(0.1)  # Give time for Arduino to process
 
-    print(f"✅ Sent to Arduino: {command}")
+    print(f"Sent to Arduino: {command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
 
-    time.sleep(0.1) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
