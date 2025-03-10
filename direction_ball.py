@@ -5,7 +5,7 @@ import serial
 import time
 
 # Initialize serial communication with Arduino (update port accordingly)
-arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Change port to match Arduino
+arduino = serial.Serial('/dev/ttyACM0', 115200, timeout=1)  # Change port to match Arduino
 time.sleep(2)  # Give Arduino time to initialize
 
 # Initialize the PiCamera2
@@ -17,6 +17,10 @@ picam2.start()
 # Get the camera resolution (use the default resolution or set one)
 frame_width = 320
 frame_height = 240
+
+# Video writer setup
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
 
 # Video writer setup
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
@@ -56,15 +60,16 @@ while True:
         command = "CENTER\n"
 
     # send command to arduino
-    arduino.write(command.encode())
-    print(f"sent to arduino: {command.strip()}")
+    arduino.write((command + "\n").encode())  # Ensure newline termination
+    arduino.flush()  # Clear buffer
+    time.sleep(0.1)  # Give time for Arduino to process
 
-    time.sleep(0.1)
-
+    print(f"{command}")
     # Show the live feed with mask for debugging
     cv.imshow("Live Feed", frame)
-    cv.imshow("Mask", mask)
+    #cv.imshow("Mask", mask)
 
+    time.sleep(0.1) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
         break
