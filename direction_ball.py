@@ -82,6 +82,9 @@ while True:
             arduino.flush()
             print(f"Sent angle: {angle}")
 
+            time.sleep(0.1)
+
+
         '''if command:
             arduino.write(command.encode())
             arduino.flush()
