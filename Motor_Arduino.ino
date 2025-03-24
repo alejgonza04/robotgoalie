@@ -18,24 +18,21 @@ void loop() {
   int button_state2 = digitalRead(BUTTON_PIN4);
   int counter_clockwise = 1;
     
-
     if (Serial.available() > 0) {  // Check if data is available
       String input = Serial.readStringUntil('\n');  // Read input until newline
       input.trim();
+
+      int angle = input.toInt();
+
+      // check for valid angle
+      if (angle >= 0 && angle <= 180) {
+      servo.write(angle);  // Move servo to the specified angle
+      position = angle;
+      Serial.print("Moved to angle: ");
+      Serial.println(angle);
+    } else {
+      Serial.print("Invalid input: ");
       Serial.println(input);
-      if(input.equals("RIGHT")){
-        Serial.println("Rotating Right");
-        for (; position <= 180; position++) {  // Gradually move the servo from 0 to 180 degrees
-          servo.write(position);  // Set servo position to 'pos' degrees
-          delay(10);
-        }
-      }
-      else if (input.equals("LEFT")) {  // Move left
-        Serial.println("Rotating Left");
-        for (; position >= 0; position--) {
-          servo.write(position);
-          delay(10);
-          }
       }
     }
 
