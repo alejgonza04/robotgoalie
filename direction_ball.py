@@ -33,71 +33,81 @@ upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased
 AREA_THRESHOLD = 500
 
 while True:
- frame = picam2.capture_array("main")
+    frame = picam2.capture_array("main")
 
- # Resize and convert to HSV
- frame = cv.resize(frame, (frame_width, frame_height))
- frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
- hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+    # Resize and convert to HSV
+    frame = cv.resize(frame, (frame_width, frame_height))
+    frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
- # Create mask for orange color
- mask = cv.inRange(hsv, lower_orange_value, upper_orange_value)
+    # Create mask for orange color
+    mask = cv.inRange(hsv, lower_orange_value, upper_orange_value)
 
- # Apply morphological transformations to reduce noise
- mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
- mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    # Apply morphological transformations to reduce noise
+    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, np.ones((5, 5), np.uint8))
 
- contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
- '''# count orange pixels in left and right halves of screen
- left_half = mask[:, :frame_width // 2]
- right_half = mask[:, frame_width // 2:]
+    '''# count orange pixels in left and right halves of screen
+    left_half = mask[:, :frame_width // 2]
+    right_half = mask[:, frame_width // 2:]
 
- left_pixels = np.sum(left_half > 0)
- right_pixels = np.sum(right_half > 0)'''
+    left_pixels = np.sum(left_half > 0)
+    right_pixels = np.sum(right_half > 0)'''
 
- command = None
- if contours:
-     largest_contour = max(contours, key=cv.contourArea)
-     area = cv.contourArea(largest_contour)
+    command = None
+    if contours:
+        largest_contour = max(contours, key=cv.contourArea)
+        area = cv.contourArea(largest_contour)
 
-     if area > AREA_THRESHOLD:
-         x, y, w, h = cv.boundingRect(largest_contour)
-         ball_center = x + w // 2
+        if area > AREA_THRESHOLD:
+            x, y, w, h = cv.boundingRect(largest_contour)
+            ball_center = x + w // 2
 
-         if ball_center < frame_width // 3:
-             command = "LEFT\n"
-         elif ball_center > frame_width * 2 // 3:
-             command = "RIGHT\n"
-         else:
-             command = "CENTER\n"
 
-     if command:
-         arduino.write(command.encode())
-         arduino.flush()
-         print(f"{command}")
- '''# determine movement command
- if left_pixels > right_pixels:
-     command = "LEFT\n"
- elif right_pixels > left_pixels:
-     command = "RIGHT\n"
- else:
-     command = "CENTER\n"
+            '''if ball_center < frame_width // 3:
+                command = "LEFT\n"
+            elif ball_center > frame_width * 2 // 3:
+                command = "RIGHT\n"
+            else:
+                command = "CENTER\n"'''
+            
+            # map ball position to servo
+            angle = int((ball_center / frame_width) * 180)
+            angle = max(0, min(180, angle))
 
- # send command to arduino
- arduino.write((command + "\n").encode())  
- arduino.flush()  
- #time.sleep(0.1)  
+            # send angle to Arduino
+            arduino.write(f"{angle}\n".encode())
+            arduino.flush()
+            print(f"Sent angle: {angle}")
 
- print(f" Sent to Arduino: {command}")
- # Show the live feed with mask for debugging'''
- cv.imshow("Live Feed", frame)
- #cv.imshow("Mask", mask)
+        '''if command:
+            arduino.write(command.encode())
+            arduino.flush()
+            print(f"{command}")'''
+    '''# determine movement command
+    if left_pixels > right_pixels:
+        command = "LEFT\n"
+    elif right_pixels > left_pixels:
+        command = "RIGHT\n"
+    else:
+        command = "CENTER\n"
+
+    # send command to arduino
+    arduino.write((command + "\n").encode())  
+    arduino.flush()  
+    #time.sleep(0.1)  
+
+    print(f" Sent to Arduino: {command}")
+    # Show the live feed with mask for debugging'''
+    cv.imshow("Live Feed", frame)
+    #cv.imshow("Mask", mask)
 
 #time.sleep(0.1) 
- # Break loop if 'q' is pressed
- if cv.waitKey(1) == ord('q'):
-     break
+    # Break loop if 'q' is pressed
+    if cv.waitKey(1) == ord('q'):
+        break
 
 picam2.stop()
 arduino.close()
