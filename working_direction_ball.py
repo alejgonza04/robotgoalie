@@ -49,13 +49,6 @@ while True:
 
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-    '''# count orange pixels in left and right halves of screen
-    left_half = mask[:, :frame_width // 2]
-    right_half = mask[:, frame_width // 2:]
-
-    left_pixels = np.sum(left_half > 0)
-    right_pixels = np.sum(right_half > 0)'''
-
     command = None
     if contours:
         largest_contour = max(contours, key=cv.contourArea)
@@ -64,14 +57,6 @@ while True:
         if area > AREA_THRESHOLD:
             x, y, w, h = cv.boundingRect(largest_contour)
             ball_center = x + w // 2
-
-
-            '''if ball_center < frame_width // 3:
-                command = "LEFT\n"
-            elif ball_center > frame_width * 2 // 3:
-                command = "RIGHT\n"
-            else:
-                command = "CENTER\n"'''
             
             # map ball position to servo
             angle = int((ball_center / frame_width) * 180)
@@ -84,26 +69,6 @@ while True:
 
             time.sleep(0.1)
 
-
-        '''if command:
-            arduino.write(command.encode())
-            arduino.flush()
-            print(f"{command}")'''
-    '''# determine movement command
-    if left_pixels > right_pixels:
-        command = "LEFT\n"
-    elif right_pixels > left_pixels:
-        command = "RIGHT\n"
-    else:
-        command = "CENTER\n"
-
-    # send command to arduino
-    arduino.write((command + "\n").encode())  
-    arduino.flush()  
-    #time.sleep(0.1)  
-
-    print(f" Sent to Arduino: {command}")
-    # Show the live feed with mask for debugging'''
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
 
