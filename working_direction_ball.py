@@ -32,6 +32,8 @@ upper_orange_value = np.array([20, 255, 255])  # Brighter neon orange (increased
 
 AREA_THRESHOLD = 500
 
+last_angle = None
+
 while True:
     frame = picam2.capture_array("main")
 
@@ -62,18 +64,22 @@ while True:
             angle = int((1 - ball_center / frame_width) * 180)
             angle = max(0, min(180, angle))
 
-            # send angle to Arduino
-            arduino.write(f"{angle}\n".encode())
-            arduino.flush()
-            print(f"Sent angle: {angle}")
+            if angle != last_angle:
+                # send angle to Arduino
+                arduino.write(f"{angle}\n".encode())
+                arduino.flush()
+                print(f"Sent angle: {angle}")
+                last_angle = angle
 
             time.sleep(0.1)
 
     else:
-        angle = 90
-        arduino.write(f"{angle}\n".encode())
-        arduino.flush()
-        print(f"Sent angle: {angle}")
+        if angle != last_angle:
+            angle = 90
+            arduino.write(f"{angle}\n".encode())
+            arduino.flush()
+            print(f"Sent angle: {angle}")
+            last_angle = angle
 
         time.sleep(0.1)
 
