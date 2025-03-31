@@ -69,9 +69,16 @@ while True:
 
             time.sleep(0.1)
 
+    else:
+        angle = 90
+        arduino.write(f"{angle}\n".encode())
+        arduino.flush()
+        print(f"Sent angle: {angle}")
+
+        time.sleep(0.1)
+
     cv.imshow("Live Feed", frame)
     #cv.imshow("Mask", mask)
-
 #time.sleep(0.1) 
     # Break loop if 'q' is pressed
     if cv.waitKey(1) == ord('q'):
