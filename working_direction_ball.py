@@ -74,8 +74,8 @@ while True:
             time.sleep(0.1)
 
     else:
+        angle = 90
         if angle != last_angle:
-            angle = 90
             arduino.write(f"{angle}\n".encode())
             arduino.flush()
             print(f"Sent angle: {angle}")
