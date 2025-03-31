@@ -58,8 +58,8 @@ while True:
             x, y, w, h = cv.boundingRect(largest_contour)
             ball_center = x + w // 2
             
-            # map ball position to servo
-            angle = int((ball_center / frame_width) * 180)
+            # map ball position to servo / doing 1 - makes 0 degrees on right and 180 degrees on left
+            angle = int((1 - ball_center / frame_width) * 180)
             angle = max(0, min(180, angle))
 
             # send angle to Arduino
