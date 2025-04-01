@@ -64,7 +64,7 @@ while True:
             angle = int((1 - ball_center / frame_width) * 180)
             angle = max(0, min(180, angle))
 
-            if angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10):
+            if last angle is None or (angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10)):
                 # send angle to Arduino
                 arduino.write(f"{angle}\n".encode())
                 arduino.flush()
@@ -75,7 +75,7 @@ while True:
 
     else:
         angle = 90
-        if angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10):
+        if last angle is None or (angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10)):
             arduino.write(f"{angle}\n".encode())
             arduino.flush()
             print(f"Sent angle: {angle}")
