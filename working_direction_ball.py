@@ -64,6 +64,13 @@ while True:
             #angle = int((ball_center / frame_width) * 180)
             relative_angle = int((ball_center / frame_width) * 180) - 90
             angle = max(0, min(180, angle))
+            # Compute relative angle so center of frame is 0 (vertical)
+            #relative_angle = int((ball_center / frame_width) * 180) - 90
+            # Convert negative angles to equivalent positive 360° value
+            if relative_angle < 0:
+                servo_angle = 360 + relative_angle
+            else:
+                servo_angle = relative_angle
 
             if last_angle is None or (angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10)):
                 # send angle to Arduino
