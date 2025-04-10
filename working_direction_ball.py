@@ -61,7 +61,7 @@ while True:
             ball_center = x + w // 2
             
             # map ball position to servo / doing 1 - makes 0 degrees on right and 180 degrees on left
-            angle = int((ball_center / frame_width) * 180)
+            angle = 180 - int((ball_center / frame_width) * 180)
             angle = max(0, min(180, angle))
 
             if last_angle is None or (angle != last_angle and angle != (last_angle - 10) and angle != (last_angle + 10)):
