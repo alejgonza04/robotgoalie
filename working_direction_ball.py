@@ -61,9 +61,9 @@ while True:
             ball_center = x + w // 2
             
             # map ball position to servo / doing 1 - makes 0 degrees on right and 180 degrees on left
-            CENTER_ANGLE = 90  # Adjust this if you want to fine-tune center
+            #CENTER_ANGLE = 90  # Adjust this if you want to fine-tune center
             angle = int((ball_center / frame_width) * 180)
-            angle = (angle + CENTER_ANGLE) % 180
+            #angle = (angle + CENTER_ANGLE) % 180
             angle = max(0, min(180, angle))
             # Compute relative angle so center of frame is 0 (vertical)
             #relative_angle = int((ball_center / frame_width) * 180) - 90
